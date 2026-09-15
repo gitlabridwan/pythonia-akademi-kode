@@ -118,6 +118,7 @@ export class MultiplayerClient {
   }
 
   makePlayer(profile, progress) {
+    const position = progress.worldPosition || { x: 1340, y: 1255, direction: "up", scene: "city" };
     return {
       name: String(profile.name || "Kadet").slice(0, 24),
       avatar: Number(profile.avatar || 0),
@@ -127,7 +128,11 @@ export class MultiplayerClient {
       joined: Date.now(),
       xp: Number(progress.xp || 0),
       focusMission: String(progress.focusMission || "x-01"),
-      completed: JSON.stringify(progress.completed || []).slice(0, 300)
+      completed: JSON.stringify(progress.completed || []).slice(0, 300),
+      x: Number(position.x || 1340),
+      y: Number(position.y || 1255),
+      direction: String(position.direction || "up"),
+      scene: String(position.scene || "city")
     };
   }
 
@@ -253,6 +258,21 @@ export class MultiplayerClient {
       this.request(`${base}/focusMission`, { method: "PUT", body: String(progress.focusMission || "x-01") }),
       this.request(`${base}/completed`, { method: "PUT", body: JSON.stringify(progress.completed || []).slice(0, 300) })
     ]);
+  }
+
+  async syncPosition(position) {
+    if (!this.roomCode || !this.auth) return;
+    const base = `pythoniaRooms/${this.roomCode}/players/${safeKey(this.auth.uid)}`;
+    await this.request(base, {
+      method: "PATCH",
+      body: {
+        x: Math.round(Number(position.x || 1340)),
+        y: Math.round(Number(position.y || 1255)),
+        direction: String(position.direction || "down"),
+        scene: String(position.scene || "city"),
+        activeAt: Date.now()
+      }
+    });
   }
 
   async writePlayerField(field, value) {

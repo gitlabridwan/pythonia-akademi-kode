@@ -1,5 +1,6 @@
 import { missions, gradeMeta, typeLabels } from "./missions.js";
 import { MultiplayerClient } from "./multiplayer.js";
+import { WorldEngine } from "./world.js";
 
 const STORAGE_KEY = "pythonia-progress-v1";
 const avatars = ["01", "02", "03", "04", "05", "06"];
@@ -23,7 +24,8 @@ function freshState() {
     bestStreak: 0,
     startedAt: Date.now(),
     missionResults: {},
-    focusMission: "x-01"
+    focusMission: "x-01",
+    worldPosition: { x: 1340, y: 1255, direction: "up", scene: "city" }
   };
 }
 
@@ -49,6 +51,12 @@ let state = loadState();
 let activeMission = null;
 let configuredForMultiplayer = false;
 let currentRoom = null;
+let world;
+let gameStarted = false;
+let pendingAfterProfile = null;
+let missionSource = "dashboard";
+let journalReturn = "menu";
+let lastPositionSave = 0;
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -180,11 +188,51 @@ const multiplayer = new MultiplayerClient({
     $("#firebaseNote").classList.toggle("configured", configured);
   },
   onRoom(room) {
+    const newlyConnected = Boolean(room) && !currentRoom;
     currentRoom = room;
-    renderRoom();
+    renderRoom(newlyConnected);
+    world?.setOthers(room?.players || []);
   },
   onError(message) {
     toast(message, "error");
+  }
+});
+
+world = new WorldEngine($("#worldCanvas"), {
+  getMissionStatus(id) {
+    const mission = missions.find((item) => item.id === id);
+    return mission ? statusFor(mission) : "locked";
+  },
+  onNear(item) {
+    const prompt = $("#nearPrompt");
+    prompt.hidden = !item;
+    if (!item) return;
+    const mission = item.type === "site" ? missions.find((entry) => entry.id === item.missionId) : null;
+    const locked = mission && !missionUnlocked(mission);
+    $("#nearPromptLabel").textContent = locked ? `${item.label} · terkunci` : item.label;
+  },
+  onScene({ label }) {
+    toast(`Memasuki ${label}.`, "info");
+  },
+  onMission(id, site) {
+    const mission = missions.find((item) => item.id === id);
+    if (!missionUnlocked(mission)) {
+      const previous = missions[missions.findIndex((item) => item.id === id) - 1];
+      toast(`Terminal terkunci. Selesaikan “${previous.title}” terlebih dahulu.`, "error");
+      return;
+    }
+    openMission(id, "game");
+  },
+  onNpc(npc) {
+    openNpc(npc);
+  },
+  onMove(position) {
+    state.worldPosition = position;
+    if (Date.now() - lastPositionSave > 1000) {
+      lastPositionSave = Date.now();
+      saveState();
+    }
+    multiplayer.syncPosition(position).catch(() => {});
   }
 });
 
@@ -194,6 +242,7 @@ function renderAll() {
   renderMissionMap();
   renderMissionGrid();
   renderProgress();
+  renderGameHud();
 }
 
 function renderIdentity() {
@@ -205,6 +254,7 @@ function renderIdentity() {
   const avatarButton = $("#profileButton");
   avatarButton.className = `avatar avatar-${state.profile.avatar}`;
   $("span", avatarButton).textContent = avatars[state.profile.avatar] || "01";
+  world?.setProfile(state.profile);
 }
 
 function renderStats() {
@@ -216,6 +266,19 @@ function renderStats() {
   $("#continueButton").innerHTML = state.completed.length === missions.length
     ? "Ulangi misi final <span>→</span>"
     : `Lanjutkan misi ${String(next.number).padStart(2, "0")} <span>→</span>`;
+}
+
+function renderGameHud() {
+  const name = state.profile.name || "Kadet";
+  const avatar = $("#gameAvatar");
+  avatar.className = `avatar avatar-${state.profile.avatar}`;
+  avatar.textContent = avatars[state.profile.avatar] || "01";
+  $("#gamePlayerName").textContent = name;
+  $("#gamePlayerClass").textContent = `Kelas ${state.profile.classLevel}`;
+  $("#gameXpValue").textContent = state.xp;
+  const next = nextMission();
+  $("#gameObjective").textContent = state.completed.length === missions.length ? "Pythonia pulih — jelajahi kembali" : `Temukan ${next.title}`;
+  $("#gameObjectiveProgress").textContent = `${state.completed.length} / ${missions.length} selesai`;
 }
 
 function statusFor(mission) {
@@ -304,9 +367,11 @@ function missionShell(mission, body) {
   </div>`;
 }
 
-function openMission(id) {
+function openMission(id, source = "dashboard") {
   const mission = missions.find((item) => item.id === id);
   if (!mission || !missionUnlocked(mission)) return;
+  missionSource = source;
+  if (source === "game") world.pause();
   activeMission = mission;
   state.focusMission = mission.id;
   saveState();
@@ -336,7 +401,7 @@ function challengeFooter(mission, action) {
 
 function bindMissionActions(mission) {
   const root = $("#missionContent");
-  $("[data-close-mission]", root).addEventListener("click", () => $("#missionDialog").close());
+  $("[data-close-mission]", root).addEventListener("click", closeMission);
   $("[data-hint]", root).addEventListener("click", () => toast(mission.hint));
 
   if (mission.type === "arrange") {
@@ -448,13 +513,83 @@ function showFeedback(mission, passed, details, countAsAttempt = true) {
   const feedback = $(".challenge-feedback", $("#missionContent"));
   feedback.hidden = false;
   feedback.className = `challenge-feedback ${passed ? "success" : "error"}`;
-  feedback.innerHTML = `<span>${passed ? "✓" : "!"}</span><div><b>${passed ? "Misi berhasil!" : countAsAttempt ? "Belum berhasil" : "Perlu diperhatikan"}</b><div class="feedback-copy">${details}</div>${passed ? `<button type="button" data-next-mission>${state.completed.length === missions.length ? "Lihat progres akhir" : "Lanjut ke misi berikutnya"} →</button>` : ""}</div>`;
+  const successAction = missionSource === "game" ? "Kembali menjelajah" : state.completed.length === missions.length ? "Lihat progres akhir" : "Lanjut ke misi berikutnya";
+  feedback.innerHTML = `<span>${passed ? "✓" : "!"}</span><div><b>${passed ? "Misi berhasil!" : countAsAttempt ? "Belum berhasil" : "Perlu diperhatikan"}</b><div class="feedback-copy">${details}</div>${passed ? `<button type="button" data-next-mission>${successAction} →</button>` : ""}</div>`;
   $("[data-next-mission]", feedback)?.addEventListener("click", () => {
-    $("#missionDialog").close();
-    const index = missions.findIndex((item) => item.id === mission.id);
-    if (index < missions.length - 1) openMission(missions[index + 1].id);
-    else navigate("progress");
+    if (missionSource === "game") {
+      closeMission();
+      toast(state.completed.length === missions.length ? "Seluruh pusat ilmu telah dipulihkan!" : "Misi berikutnya telah terbuka di kota.", "success");
+    } else {
+      $("#missionDialog").close();
+      const index = missions.findIndex((item) => item.id === mission.id);
+      if (index < missions.length - 1) openMission(missions[index + 1].id);
+      else navigate("progress");
+    }
   });
+}
+
+function closeMission() {
+  $("#missionDialog").close();
+  if (missionSource === "game") world.resume();
+}
+
+function enterWorld(mode = "solo") {
+  gameStarted = true;
+  journalReturn = "game";
+  $("#mainMenu").hidden = true;
+  $("#app").hidden = true;
+  $("#gameView").hidden = false;
+  $("#roomPanel").classList.remove("open");
+  world.setProfile(state.profile);
+  world.setPosition(state.worldPosition);
+  world.setOthers(currentRoom?.players || []);
+  world.start();
+  renderGameHud();
+  if (mode === "multiplayer" && currentRoom) toast(`Menjelajah bersama ruang ${currentRoom.code}.`, "success");
+}
+
+function showMainMenu() {
+  journalReturn = "menu";
+  $("#gameView").hidden = true;
+  $("#app").hidden = true;
+  $("#mainMenu").hidden = false;
+  $("#roomPanel").classList.remove("open");
+  world.stop();
+}
+
+function openJournal(screen = "map", returnTo = null) {
+  journalReturn = returnTo || (!$("#gameView").hidden ? "game" : "menu");
+  $("#mainMenu").hidden = true;
+  $("#gameView").hidden = true;
+  $("#app").hidden = false;
+  world.pause();
+  navigate(screen);
+}
+
+function closeJournal() {
+  $("#app").hidden = true;
+  if (journalReturn === "game" && gameStarted) {
+    $("#gameView").hidden = false;
+    world.start();
+  } else {
+    $("#mainMenu").hidden = false;
+    world.stop();
+  }
+}
+
+function openNpc(npc) {
+  world.pause();
+  const portrait = $("#npcPortrait");
+  portrait.className = `npc-portrait avatar avatar-${npc.avatar}`;
+  portrait.textContent = avatars[npc.avatar] || "01";
+  $("#npcName").textContent = npc.name;
+  $("#npcMessage").textContent = npc.message;
+  $("#npcDialog").showModal();
+}
+
+function closeNpc() {
+  $("#npcDialog").close();
+  world.resume();
 }
 
 function navigate(screen) {
@@ -474,12 +609,19 @@ function openProfile() {
 }
 
 function openRoomDialog() {
+  if (!$("#gameView").hidden) world.pause();
   $("#roomDialog").showModal();
 }
 
-function renderRoom() {
+function showRoomControls() {
+  if (currentRoom) $("#roomPanel").classList.add("open");
+  else openRoomDialog();
+}
+
+function renderRoom(openOnConnect = false) {
   const panel = $("#roomPanel");
-  panel.classList.toggle("open", Boolean(currentRoom));
+  if (!currentRoom) panel.classList.remove("open");
+  else if (openOnConnect) panel.classList.add("open");
   $("#roomSideStatus").textContent = currentRoom ? `Ruang ${currentRoom.code}` : "Belum terhubung";
   if (!currentRoom) return;
   $("#roomCodeLabel").textContent = currentRoom.code;
@@ -559,8 +701,31 @@ function bindGlobalActions() {
     button.classList.add("active");
     renderMissionGrid(button.dataset.filter);
   }));
+  $("#menuSoloButton").addEventListener("click", () => {
+    if (!state.profile.name) {
+      pendingAfterProfile = "solo";
+      openProfile();
+    } else enterWorld("solo");
+  });
+  $("#menuMultiplayerButton").addEventListener("click", () => {
+    if (!state.profile.name) {
+      pendingAfterProfile = "room";
+      openProfile();
+    } else if (currentRoom) {
+      enterWorld("multiplayer");
+      $("#roomPanel").classList.add("open");
+    } else openRoomDialog();
+  });
+  $("#menuGuideButton").addEventListener("click", () => openJournal("help", "menu"));
+  $("#gameJournalButton").addEventListener("click", () => openJournal("map", "game"));
+  $("#gameMenuButton").addEventListener("click", showMainMenu);
+  $("#gameRoomButton").addEventListener("click", showRoomControls);
+  $("#backToWorldButton").addEventListener("click", closeJournal);
   $("#profileButton").addEventListener("click", openProfile);
-  $("[data-close-profile]").addEventListener("click", () => $("#profileDialog").close());
+  $("[data-close-profile]").addEventListener("click", () => {
+    pendingAfterProfile = null;
+    $("#profileDialog").close();
+  });
   $("#mobileMenuButton").addEventListener("click", () => document.body.classList.toggle("menu-open"));
   $("#exportButton").addEventListener("click", exportCsv);
 
@@ -580,15 +745,24 @@ function bindGlobalActions() {
     renderAll();
     $("#profileDialog").close();
     toast(`Profil ${state.profile.name} tersimpan.`, "success");
+    const destination = pendingAfterProfile;
+    pendingAfterProfile = null;
+    if (destination === "solo") enterWorld("solo");
+    if (destination === "room") openRoomDialog();
   });
 
-  ["#openRoomButton", "#heroRoomButton"].forEach((id) => $(id).addEventListener("click", openRoomDialog));
+  ["#openRoomButton", "#heroRoomButton"].forEach((id) => $(id).addEventListener("click", showRoomControls));
   $("#closeRoomDialog").addEventListener("click", () => $("#roomDialog").close());
+  $("#roomDialog").addEventListener("close", () => {
+    if (!$("#gameView").hidden) world.resume();
+  });
   $("#createRoomButton").addEventListener("click", (event) => roomAction(async () => {
     if (!state.profile.name) { $("#roomDialog").close(); openProfile(); throw new Error("Isi profil sebelum membuat ruang."); }
     const code = await multiplayer.createRoom(state.profile, state);
     $("#roomDialog").close();
     toast(`Ruang ${code} berhasil dibuat.`, "success");
+    enterWorld("multiplayer");
+    $("#roomPanel").classList.add("open");
   }, event.currentTarget));
   $("#joinRoomForm").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -597,6 +771,8 @@ function bindGlobalActions() {
       const code = await multiplayer.joinRoom($("#joinCodeInput").value, state.profile, state);
       $("#roomDialog").close();
       toast(`Terhubung ke ruang ${code}.`, "success");
+      enterWorld("multiplayer");
+      $("#roomPanel").classList.add("open");
     }, $("#joinRoomForm button"));
   });
   $("#closeRoomPanel").addEventListener("click", () => $("#roomPanel").classList.remove("open"));
@@ -620,6 +796,12 @@ function bindGlobalActions() {
     await multiplayer.leave();
     toast("Kamu telah keluar dari ruang.");
   }, event.currentTarget));
+  $("#closeNpcDialog").addEventListener("click", closeNpc);
+  $("#npcContinueButton").addEventListener("click", closeNpc);
+  $("#npcDialog").addEventListener("close", () => world.resume());
+  $("#missionDialog").addEventListener("close", () => {
+    if (missionSource === "game") world.resume();
+  });
 }
 
 async function start() {
@@ -627,9 +809,8 @@ async function start() {
   renderAll();
   await multiplayer.initialise();
   $("#bootScreen").classList.add("leaving");
-  $("#app").hidden = false;
+  $("#mainMenu").hidden = false;
   setTimeout(() => $("#bootScreen").remove(), 450);
-  if (!state.profile.name) setTimeout(openProfile, 500);
   if (navigator.onLine) python.boot().catch((error) => toast(error.message, "error"));
   else python.setStatus("error", "Offline · kuis tetap aktif");
 }

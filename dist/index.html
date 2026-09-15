@@ -10,6 +10,7 @@
     <title>PYTHONIA — Akademi Kode Nusantara</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./game.css" />
   </head>
   <body>
     <div class="ambient" aria-hidden="true">
@@ -23,6 +24,50 @@
       <p>Sistem akademi sedang disiapkan</p>
       <div class="boot-bar"><span></span></div>
     </div>
+
+    <section id="mainMenu" class="adventure-menu" hidden>
+      <div class="adventure-menu-art"></div>
+      <div class="adventure-menu-shade"></div>
+      <header class="adventure-menu-header">
+        <button class="brand menu-brand" aria-label="PYTHONIA">
+          <span class="brand-mark">PY</span>
+          <span><b>PYTHONIA</b><small>Akademi Kode Nusantara</small></span>
+        </button>
+        <div class="menu-grade-badge">PETUALANGAN PYTHON · SMA X–XII</div>
+      </header>
+      <main class="adventure-menu-copy">
+        <span class="menu-eyebrow"><i></i> JELAJAHI · CODING · TAKLUKKAN</span>
+        <h1>PYTHONIA<br /><em>CODE QUEST</em></h1>
+        <p class="menu-tagline">Pulihkan sembilan gedung ilmu Python.</p>
+        <p class="menu-description">Berjalanlah melintasi kota, temui mentor, masuki sembilan gedung, dan tuntaskan 12 misi dengan Python asli.</p>
+        <div class="adventure-menu-actions">
+          <button id="menuSoloButton" class="adventure-choice primary-choice"><span class="choice-icon">▶</span><span><b>Mulai solo</b><small>Jelajahi kota dengan caramu</small></span><strong>→</strong></button>
+          <button id="menuMultiplayerButton" class="adventure-choice"><span class="choice-icon">◎</span><span><b>Main bersama</b><small>Buat atau gabung ruang · hingga 8 pemain</small></span><strong>→</strong></button>
+          <button id="menuGuideButton" class="menu-guide-button">? &nbsp; Lihat cara bermain</button>
+        </div>
+      </main>
+      <aside class="menu-location-note"><span>⌖</span><div><small>SATU KOTA · TIGA TINGKAT</small><b>9 gedung · 12 misi</b></div></aside>
+      <footer class="adventure-menu-footer"><span>⌨ WASD / tombol panah</span><span>Ⓔ Interaksi</span><span>◉ Keyboard &amp; sentuh</span><span>Solo &amp; multiplayer</span></footer>
+    </section>
+
+    <section id="gameView" class="game-view" hidden>
+      <canvas id="worldCanvas" aria-label="Kota Pythonia. Gerakkan karakter dengan tombol panah atau WASD dan tekan E untuk memasuki gedung atau berinteraksi."></canvas>
+      <header class="game-hud">
+        <div class="game-profile-card"><span id="gameAvatar" class="avatar avatar-0">01</span><div><small>KADET AKTIF</small><b id="gamePlayerName">Kadet</b><span id="gamePlayerClass">Kelas X</span></div></div>
+        <div class="game-objective"><small>MISI BERIKUTNYA</small><b id="gameObjective">Temukan Gerbang Algoritma</b><span id="gameObjectiveProgress">0 / 12 selesai</span></div>
+        <div class="game-hud-actions"><button id="gameRoomButton" title="Ruang multiplayer">◎ <span>Tim</span></button><button id="gameJournalButton" title="Buka jurnal misi">▤ <span>Jurnal</span></button><button id="gameMenuButton" title="Kembali ke menu">☰</button></div>
+      </header>
+      <div class="game-xp"><span>⚡</span><b id="gameXpValue">0</b><small>XP</small></div>
+      <div id="nearPrompt" class="near-prompt" hidden><kbd>E</kbd><div><small>INTERAKSI</small><b id="nearPromptLabel">Masuk gedung</b></div></div>
+      <div class="touch-dpad" aria-label="Kontrol gerak sentuh">
+        <button data-move="up" aria-label="Berjalan ke atas">▲</button>
+        <button data-move="left" aria-label="Berjalan ke kiri">◀</button>
+        <button data-move="down" aria-label="Berjalan ke bawah">▼</button>
+        <button data-move="right" aria-label="Berjalan ke kanan">▶</button>
+      </div>
+      <button id="interactButton" class="touch-interact"><b>E</b><span>INTERAKSI</span></button>
+      <div class="game-control-hint"><span>WASD</span> Bergerak <span>E</span> Interaksi</div>
+    </section>
 
     <div id="app" class="app-shell" hidden>
       <aside class="sidebar">
@@ -61,6 +106,7 @@
       <main class="workspace">
         <header class="topbar">
           <button id="mobileMenuButton" class="icon-button mobile-only" aria-label="Buka menu">☰</button>
+          <button id="backToWorldButton" class="back-world-button" aria-label="Kembali ke dunia">← Dunia</button>
           <div>
             <span class="breadcrumb">AKADEMI / <b id="screenLabel">PETA MISI</b></span>
             <h1 id="welcomeTitle">Selamat datang, Kadet</h1>
@@ -132,12 +178,14 @@
         </section>
 
         <section id="screen-help" class="screen">
-          <div class="screen-intro"><div><span class="kicker">PANDUAN KADET</span><h2>Cara bermain</h2><p>Belajar Python melalui tiga bentuk aktivitas yang saling melengkapi.</p></div></div>
+          <div class="screen-intro"><div><span class="kicker">PANDUAN KADET</span><h2>Cara bermain</h2><p>Jelajahi kota, masuki gedung, dan pulihkan pusat ilmu Python secara berurutan.</p></div></div>
           <div class="help-grid">
-            <article><span class="help-number">01</span><div class="help-glyph">?</div><h3>Pecahkan konsep</h3><p>Pilih jawaban terbaik dan pahami alasan di balik konsep Python.</p></article>
-            <article><span class="help-number">02</span><div class="help-glyph">⇅</div><h3>Susun algoritma</h3><p>Urutkan potongan kode sampai alur program bekerja secara logis.</p></article>
-            <article><span class="help-number">03</span><div class="help-glyph">&gt;_</div><h3>Jalankan Python</h3><p>Tulis dan uji kode Python asli langsung di browser melalui mesin WebAssembly.</p></article>
-            <article><span class="help-number">04</span><div class="help-glyph">◎</div><h3>Kolaborasi</h3><p>Buat ruang, lihat progres teman, kirim pesan, dan selesaikan Relay Algoritma bersama.</p></article>
+            <article><span class="help-number">01</span><div class="help-glyph">✣</div><h3>Jelajahi kota</h3><p>Berjalan dengan WASD atau tombol panah. Di ponsel, gunakan D-pad pada layar.</p></article>
+            <article><span class="help-number">02</span><div class="help-glyph">E</div><h3>Temukan interaksi</h3><p>Dekati pintu gedung atau NPC, lalu tekan E, Enter, Spasi, atau tombol Interaksi.</p></article>
+            <article><span class="help-number">03</span><div class="help-glyph">?</div><h3>Pecahkan konsep</h3><p>Pilih jawaban terbaik dan pahami alasan di balik konsep Python.</p></article>
+            <article><span class="help-number">04</span><div class="help-glyph">⇅</div><h3>Susun algoritma</h3><p>Urutkan potongan kode sampai alur program bekerja secara logis.</p></article>
+            <article><span class="help-number">05</span><div class="help-glyph">&gt;_</div><h3>Jalankan Python</h3><p>Tulis dan uji kode Python asli langsung di browser melalui mesin WebAssembly.</p></article>
+            <article><span class="help-number">06</span><div class="help-glyph">◎</div><h3>Kolaborasi</h3><p>Lihat karakter teman bergerak, kirim pesan, dan selesaikan Relay Algoritma bersama.</p></article>
           </div>
           <div class="curriculum-table-wrap">
             <table class="curriculum-table">
@@ -152,7 +200,9 @@
         </section>
       </main>
 
-      <aside id="roomPanel" class="room-panel" aria-label="Panel ruang kolaborasi">
+    </div>
+
+    <aside id="roomPanel" class="room-panel" aria-label="Panel ruang kolaborasi">
         <div class="room-panel-head"><div><small>RUANG AKTIF</small><strong id="roomCodeLabel">—</strong></div><button id="closeRoomPanel" class="icon-button" aria-label="Tutup panel">×</button></div>
         <div id="roomStateBadge" class="room-state">LOBBY</div>
         <div class="room-section"><div class="room-section-title"><span>ANGGOTA</span><b id="playerCount">0/8</b></div><div id="playerList" class="player-list"></div></div>
@@ -160,8 +210,7 @@
         <div class="room-section relay-section"><div class="room-section-title"><span>RELAY ALGORITMA</span><b id="relayCount">0/3</b></div><p>Tim mengaktifkan Analisis → Rancangan → Pengujian secara berurutan.</p><div id="relaySteps" class="relay-steps"></div></div>
         <div class="room-section chat-section"><div class="room-section-title"><span>COMMLINK</span></div><div id="chatMessages" class="chat-messages"></div><form id="chatForm" class="chat-form"><input id="chatInput" maxlength="120" placeholder="Kirim pesan tim…" autocomplete="off" /><button aria-label="Kirim pesan">↑</button></form></div>
         <button id="leaveRoomButton" class="danger-link">Keluar dari ruang</button>
-      </aside>
-    </div>
+    </aside>
 
     <div id="toastRegion" class="toast-region" aria-live="polite"></div>
 
@@ -192,6 +241,15 @@
         <form id="joinRoomForm" class="room-choice join-choice"><span>⌁</span><strong>Gabung ruang</strong><input id="joinCodeInput" maxlength="6" pattern="[A-Za-z2-9]{6}" placeholder="6 DIGIT" required /><button class="mini-button">Gabung</button></form>
       </div>
       <p class="firebase-note" id="firebaseNote">Membaca konfigurasi multiplayer…</p>
+    </dialog>
+
+    <dialog id="npcDialog" class="modal npc-modal">
+      <button class="modal-close" id="closeNpcDialog" aria-label="Tutup">×</button>
+      <div id="npcPortrait" class="npc-portrait avatar avatar-0">01</div>
+      <span class="modal-kicker">TRANSMISI MENTOR</span>
+      <h2 id="npcName">Mentor Pythonia</h2>
+      <p id="npcMessage">Selamat datang di Pythonia.</p>
+      <button id="npcContinueButton" class="primary-button">Lanjutkan perjalanan <span>→</span></button>
     </dialog>
 
     <script type="module" src="./app.js"></script>

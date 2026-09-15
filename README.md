@@ -4,11 +4,16 @@ Game pembelajaran Python baru untuk siswa SMA kelas X–XII. Siswa dapat belajar
 
 ## Fitur
 
+- Kota pixel-art besar yang dapat dijelajahi dengan karakter manusia beranimasi.
+- Kontrol keyboard **WASD/tombol panah + E** dan kontrol sentuh untuk ponsel.
+- Tata kota mengikuti pola game Kota Komputasional: alun-alun dan fountain di pusat, jalan utama, 9 gedung besar, pepohonan, NPC, serta kamera yang mengikuti pemain.
+- Setiap gedung dapat dimasuki melalui pintu dan memiliki interior tersendiri, terminal misi, mentor, dan pintu keluar kembali ke kota.
+- Collision aktif pada batas kota, gedung, dan fountain; pemain tidak dapat berjalan menembus objek utama.
 - 12 misi berurutan: kuis konsep, susun kode, praktik Python, dan debugging.
 - Eksekusi Python asli di browser menggunakan Pyodide WebAssembly.
 - Progres solo tersimpan otomatis di browser (`localStorage`).
 - Dasbor XP, akurasi, streak, rekomendasi, dan ekspor laporan CSV.
-- Multiplayer Firebase: ruang 6 karakter, status siap, progres anggota, chat, dan Relay Algoritma.
+- Multiplayer Firebase: ruang 6 karakter, karakter pemain lain tampil pada kota/interior yang sama, status siap, progres anggota, chat, dan Relay Algoritma.
 - Responsif untuk laptop, tablet, dan ponsel.
 - Workflow GitHub Actions untuk GitHub Pages sudah disertakan.
 
@@ -29,7 +34,7 @@ Mode solo langsung berfungsi tanpa Firebase. Karena browser perlu memuat modul d
 3. Jalankan:
 
    ```bash
-   npm run serve
+   npm start
    ```
 
    Jika Node.js belum terpasang, gunakan:
@@ -38,7 +43,18 @@ Mode solo langsung berfungsi tanpa Firebase. Karena browser perlu memuat modul d
    python3 -m http.server 8080 --directory dist
    ```
 
-4. Buka `http://localhost:8080`.
+4. Buka `http://localhost:4173`. Jika memakai perintah Python alternatif, buka `http://localhost:8080`.
+
+Di Windows, Anda juga dapat mengklik dua kali `start.bat` setelah Node.js terpasang.
+
+Pada menu utama pilih **Mulai solo**, isi profil, kemudian:
+
+- gunakan `W`, `A`, `S`, `D` atau tombol panah untuk berjalan;
+- dekati pintu gedung atau NPC sampai prompt interaksi muncul;
+- tekan `E`, `Enter`, atau `Spasi` untuk berinteraksi;
+- setelah masuk gedung, dekati terminal bernomor untuk membuka misi dan gunakan pintu bawah untuk kembali ke kota;
+- pada ponsel gunakan D-pad dan tombol **Interaksi**;
+- buka **Jurnal** untuk melihat peta misi, daftar misi, dan progres belajar.
 
 Koneksi internet diperlukan saat pertama kali mesin Python mengunduh Pyodide `314.0.7` dari CDN. Kuis dan susun kode tetap dapat dibuka apabila Pyodide tidak tersedia.
 

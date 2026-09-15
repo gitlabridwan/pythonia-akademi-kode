@@ -7,14 +7,21 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const required = [
   "dist/index.html",
   "dist/styles.css",
+  "dist/game.css",
   "dist/app.js",
+  "dist/world.js",
   "dist/missions.js",
   "dist/multiplayer.js",
   "dist/multiplayer-config.json",
   "dist/py-worker.mjs",
   "dist/favicon.svg",
+  "dist/assets/pythonia-campus.png",
   "dist/.nojekyll",
   "firebase.rules.json",
+  "server.mjs",
+  "start.bat",
+  "start.sh",
+  "scripts/test-world.mjs",
   ".github/workflows/deploy-pages.yml"
 ];
 
@@ -41,7 +48,7 @@ const rules = await readFile(resolve(root, "firebase.rules.json"), "utf8");
 if (rules.includes("numChildren")) errors.push("Rules masih memakai numChildren(), yang tidak didukung Realtime Database.");
 
 const html = await readFile(resolve(root, "dist/index.html"), "utf8");
-for (const reference of ["./styles.css", "./app.js", "./favicon.svg"]) {
+for (const reference of ["./styles.css", "./game.css", "./app.js", "./favicon.svg"]) {
   if (!html.includes(reference)) errors.push(`Referensi ${reference} tidak ditemukan di index.html.`);
 }
 
