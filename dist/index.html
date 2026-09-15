@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07111f" />
+    <meta
+      name="description"
+      content="PYTHONIA adalah game pembelajaran Python bertingkat untuk SMA kelas X–XII dengan misi solo dan kolaborasi." />
+    <title>PYTHONIA — Akademi Kode Nusantara</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true">
+      <span class="orb orb-a"></span>
+      <span class="orb orb-b"></span>
+      <span class="grid-plane"></span>
+    </div>
+
+    <div id="bootScreen" class="boot-screen">
+      <div class="boot-mark"><span>PY</span></div>
+      <p>Sistem akademi sedang disiapkan</p>
+      <div class="boot-bar"><span></span></div>
+    </div>
+
+    <div id="app" class="app-shell" hidden>
+      <aside class="sidebar">
+        <button class="brand" data-screen="map" aria-label="Kembali ke peta akademi">
+          <span class="brand-mark">PY</span>
+          <span><b>PYTHONIA</b><small>Akademi Kode Nusantara</small></span>
+        </button>
+
+        <nav class="main-nav" aria-label="Navigasi utama">
+          <button class="nav-button active" data-screen="map">
+            <span class="nav-icon">⌘</span><span>Peta Akademi</span>
+          </button>
+          <button class="nav-button" data-screen="missions">
+            <span class="nav-icon">{ }</span><span>Daftar Misi</span>
+          </button>
+          <button class="nav-button" data-screen="progress">
+            <span class="nav-icon">↗</span><span>Progres Belajar</span>
+          </button>
+          <button class="nav-button" data-screen="help">
+            <span class="nav-icon">?</span><span>Panduan</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-card live-card">
+          <span class="pulse-dot"></span>
+          <div><small>MODE KOLABORASI</small><strong id="roomSideStatus">Belum terhubung</strong></div>
+          <button id="openRoomButton" class="mini-button">Buka ruang</button>
+        </div>
+
+        <div class="sidebar-profile">
+          <button id="profileButton" class="avatar avatar-0" aria-label="Ubah profil"><span>01</span></button>
+          <div><strong id="profileSideName">Kadet Baru</strong><small id="profileSideClass">SMA · Kelas X</small></div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <button id="mobileMenuButton" class="icon-button mobile-only" aria-label="Buka menu">☰</button>
+          <div>
+            <span class="breadcrumb">AKADEMI / <b id="screenLabel">PETA MISI</b></span>
+            <h1 id="welcomeTitle">Selamat datang, Kadet</h1>
+          </div>
+          <div class="topbar-actions">
+            <div class="engine-chip" id="engineChip" title="Status mesin Python">
+              <span class="engine-light"></span><span>Python belum dimuat</span>
+            </div>
+            <div class="xp-chip"><span>⚡</span><b id="xpValue">0</b><small>XP</small></div>
+          </div>
+        </header>
+
+        <section id="screen-map" class="screen active" aria-labelledby="welcomeTitle">
+          <div class="hero-panel">
+            <div class="hero-copy">
+              <span class="kicker">PROGRAM ORIENTASI KODE · SMA X–XII</span>
+              <h2>Bangun logika.<br /><em>Kendalikan Python.</em></h2>
+              <p>
+                Pulau-pulau digital Pythonia kehilangan sistem navigasinya. Kuasai konsep,
+                susun algoritma, jalankan kode asli, dan pulihkan seluruh jaringan akademi.
+              </p>
+              <div class="hero-actions">
+                <button id="continueButton" class="primary-button">Mulai misi pertama <span>→</span></button>
+                <button id="heroRoomButton" class="secondary-button">Main bersama</button>
+              </div>
+            </div>
+            <div class="hero-visual" aria-label="Visual tiga pulau tingkat pembelajaran">
+              <div class="planet-ring ring-one"></div>
+              <div class="planet-ring ring-two"></div>
+              <div class="core-orb"><span>λ</span><small>PYTHON CORE</small></div>
+              <button class="floating-island island-x" data-grade="10"><b>X</b><span>Fondasi</span></button>
+              <button class="floating-island island-xi" data-grade="11"><b>XI</b><span>Struktur</span></button>
+              <button class="floating-island island-xii" data-grade="12"><b>XII</b><span>Rekayasa</span></button>
+              <span class="satellite sat-a"></span><span class="satellite sat-b"></span>
+            </div>
+          </div>
+
+          <div class="stat-row">
+            <article><span class="stat-icon cyan">✓</span><div><small>MISI SELESAI</small><strong id="completedStat">0 / 12</strong></div></article>
+            <article><span class="stat-icon violet">◇</span><div><small>AKURASI</small><strong id="accuracyStat">—</strong></div></article>
+            <article><span class="stat-icon amber">↯</span><div><small>STREAK TERBAIK</small><strong id="streakStat">0 misi</strong></div></article>
+            <article><span class="stat-icon green">⌁</span><div><small>LEVEL AKADEMI</small><strong id="levelStat">Kadet 1</strong></div></article>
+          </div>
+
+          <div class="section-heading">
+            <div><span>JALUR PEMBELAJARAN</span><h3>Peta ekspedisi Python</h3></div>
+            <div class="legend"><span><i class="done"></i>Selesai</span><span><i class="current"></i>Terbuka</span><span><i></i>Terkunci</span></div>
+          </div>
+          <div id="missionMap" class="mission-map"></div>
+        </section>
+
+        <section id="screen-missions" class="screen">
+          <div class="screen-intro">
+            <div><span class="kicker">12 MODUL INTERAKTIF</span><h2>Daftar misi</h2><p>Filter berdasarkan tingkat kelas atau bentuk tantangan.</p></div>
+            <div class="filter-bar" id="missionFilters">
+              <button class="active" data-filter="all">Semua</button>
+              <button data-filter="10">Kelas X</button>
+              <button data-filter="11">Kelas XI</button>
+              <button data-filter="12">Kelas XII</button>
+              <button data-filter="code">Praktik kode</button>
+            </div>
+          </div>
+          <div id="missionGrid" class="mission-grid"></div>
+        </section>
+
+        <section id="screen-progress" class="screen">
+          <div class="screen-intro"><div><span class="kicker">DASBOR KOMPETENSI</span><h2>Progres belajar</h2><p>Ringkasan capaian dan konsep yang perlu dilatih kembali.</p></div><button id="exportButton" class="secondary-button">Unduh laporan CSV</button></div>
+          <div id="progressDashboard" class="progress-dashboard"></div>
+        </section>
+
+        <section id="screen-help" class="screen">
+          <div class="screen-intro"><div><span class="kicker">PANDUAN KADET</span><h2>Cara bermain</h2><p>Belajar Python melalui tiga bentuk aktivitas yang saling melengkapi.</p></div></div>
+          <div class="help-grid">
+            <article><span class="help-number">01</span><div class="help-glyph">?</div><h3>Pecahkan konsep</h3><p>Pilih jawaban terbaik dan pahami alasan di balik konsep Python.</p></article>
+            <article><span class="help-number">02</span><div class="help-glyph">⇅</div><h3>Susun algoritma</h3><p>Urutkan potongan kode sampai alur program bekerja secara logis.</p></article>
+            <article><span class="help-number">03</span><div class="help-glyph">&gt;_</div><h3>Jalankan Python</h3><p>Tulis dan uji kode Python asli langsung di browser melalui mesin WebAssembly.</p></article>
+            <article><span class="help-number">04</span><div class="help-glyph">◎</div><h3>Kolaborasi</h3><p>Buat ruang, lihat progres teman, kirim pesan, dan selesaikan Relay Algoritma bersama.</p></article>
+          </div>
+          <div class="curriculum-table-wrap">
+            <table class="curriculum-table">
+              <thead><tr><th>Tingkat</th><th>Fokus</th><th>Kompetensi</th><th>Misi</th></tr></thead>
+              <tbody>
+                <tr><td><span class="grade-pill grade-10">Kelas X</span></td><td>Fondasi Python</td><td>Algoritma, variabel, percabangan, perulangan</td><td>01–04</td></tr>
+                <tr><td><span class="grade-pill grade-11">Kelas XI</span></td><td>Struktur Data</td><td>List, fungsi, dictionary, debugging</td><td>05–08</td></tr>
+                <tr><td><span class="grade-pill grade-12">Kelas XII</span></td><td>Rekayasa Program</td><td>OOP, class, pipeline data, analisis</td><td>09–12</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <aside id="roomPanel" class="room-panel" aria-label="Panel ruang kolaborasi">
+        <div class="room-panel-head"><div><small>RUANG AKTIF</small><strong id="roomCodeLabel">—</strong></div><button id="closeRoomPanel" class="icon-button" aria-label="Tutup panel">×</button></div>
+        <div id="roomStateBadge" class="room-state">LOBBY</div>
+        <div class="room-section"><div class="room-section-title"><span>ANGGOTA</span><b id="playerCount">0/8</b></div><div id="playerList" class="player-list"></div></div>
+        <div id="lobbyControls" class="lobby-controls"><button id="readyButton" class="secondary-button wide">Saya siap</button><button id="startRoomButton" class="primary-button wide">Mulai sesi</button></div>
+        <div class="room-section relay-section"><div class="room-section-title"><span>RELAY ALGORITMA</span><b id="relayCount">0/3</b></div><p>Tim mengaktifkan Analisis → Rancangan → Pengujian secara berurutan.</p><div id="relaySteps" class="relay-steps"></div></div>
+        <div class="room-section chat-section"><div class="room-section-title"><span>COMMLINK</span></div><div id="chatMessages" class="chat-messages"></div><form id="chatForm" class="chat-form"><input id="chatInput" maxlength="120" placeholder="Kirim pesan tim…" autocomplete="off" /><button aria-label="Kirim pesan">↑</button></form></div>
+        <button id="leaveRoomButton" class="danger-link">Keluar dari ruang</button>
+      </aside>
+    </div>
+
+    <div id="toastRegion" class="toast-region" aria-live="polite"></div>
+
+    <dialog id="profileDialog" class="modal profile-modal">
+      <form method="dialog" id="profileForm">
+        <button class="modal-close" type="button" data-close-profile aria-label="Tutup">×</button>
+        <span class="modal-kicker">IDENTITAS KADET</span>
+        <h2>Siapa yang akan masuk akademi?</h2>
+        <p>Profil hanya disimpan di perangkat ini dan ditampilkan kepada anggota ruang ketika bermain bersama.</p>
+        <label>Nama panggilan<input id="profileName" maxlength="24" required placeholder="Contoh: Naya" /></label>
+        <label>Tingkat kelas<select id="profileClass"><option value="X">Kelas X</option><option value="XI">Kelas XI</option><option value="XII">Kelas XII</option></select></label>
+        <fieldset><legend>Pilih avatar</legend><div id="avatarPicker" class="avatar-picker"></div></fieldset>
+        <button class="primary-button wide" type="submit">Masuk ke Pythonia <span>→</span></button>
+      </form>
+    </dialog>
+
+    <dialog id="missionDialog" class="modal mission-modal">
+      <div id="missionContent"></div>
+    </dialog>
+
+    <dialog id="roomDialog" class="modal room-modal">
+      <button class="modal-close" id="closeRoomDialog" aria-label="Tutup">×</button>
+      <span class="modal-kicker">MODE KOLABORASI</span>
+      <h2>Hubungkan tim coding</h2>
+      <p>Buat ruang baru atau masukkan kode dari teman. Maksimal delapan pemain.</p>
+      <div class="room-choice-grid">
+        <button id="createRoomButton" class="room-choice"><span>＋</span><strong>Buat ruang</strong><small>Menjadi host sesi baru</small></button>
+        <form id="joinRoomForm" class="room-choice join-choice"><span>⌁</span><strong>Gabung ruang</strong><input id="joinCodeInput" maxlength="6" pattern="[A-Za-z2-9]{6}" placeholder="6 DIGIT" required /><button class="mini-button">Gabung</button></form>
+      </div>
+      <p class="firebase-note" id="firebaseNote">Membaca konfigurasi multiplayer…</p>
+    </dialog>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

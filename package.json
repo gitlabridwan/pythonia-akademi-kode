@@ -1,0 +1,11 @@
+{
+  "name": "pythonia-akademi-kode",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Game pembelajaran Python untuk SMA kelas X-XII, solo dan multiplayer.",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "serve": "python3 -m http.server 8080 --directory dist"
+  }
+}

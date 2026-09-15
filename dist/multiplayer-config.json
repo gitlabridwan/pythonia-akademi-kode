@@ -1,0 +1,9 @@
+{
+  "provider": "firebase",
+  "firebase": {
+    "apiKey": "GANTI_DENGAN_FIREBASE_WEB_API_KEY",
+    "databaseURL": "https://NAMA_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app"
+  },
+  "maxPlayers": 8,
+  "pollIntervalMs": 1500
+}
