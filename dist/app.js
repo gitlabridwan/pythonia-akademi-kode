@@ -805,6 +805,13 @@ function bindGlobalActions() {
 }
 
 async function start() {
+  const touchQuery = window.matchMedia?.("(hover: none), (pointer: coarse)");
+  const updateInputMode = () => {
+    const touchInput = Number(navigator.maxTouchPoints || 0) > 0 || Boolean(touchQuery?.matches);
+    document.documentElement.classList.toggle("touch-input", touchInput);
+  };
+  updateInputMode();
+  touchQuery?.addEventListener?.("change", updateInputMode);
   bindGlobalActions();
   renderAll();
   await multiplayer.initialise();

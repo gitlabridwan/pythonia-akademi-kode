@@ -52,6 +52,18 @@ for (const reference of ["./styles.css", "./game.css", "./app.js", "./favicon.sv
   if (!html.includes(reference)) errors.push(`Referensi ${reference} tidak ditemukan di index.html.`);
 }
 
+const gameCss = await readFile(resolve(root, "dist/game.css"), "utf8");
+const appSource = await readFile(resolve(root, "dist/app.js"), "utf8");
+for (const signature of ["max-width: 1180px", "pointer: coarse", "html.touch-input .touch-dpad", "html.touch-input .touch-interact"]) {
+  if (!gameCss.includes(signature)) errors.push(`Dukungan kontrol sentuh tidak lengkap: ${signature}.`);
+}
+if (gameCss.includes(".game-hud-actions button:first-child { display: none; }")) {
+  errors.push("Tombol Tim masih disembunyikan pada layar kecil.");
+}
+if (!appSource.includes("navigator.maxTouchPoints") || !appSource.includes('classList.toggle("touch-input"')) {
+  errors.push("Deteksi perangkat sentuh di app.js belum tersedia.");
+}
+
 if (errors.length) {
   console.error("Validasi gagal:\n" + errors.map((error) => `- ${error}`).join("\n"));
   process.exit(1);

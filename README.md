@@ -6,6 +6,7 @@ Game pembelajaran Python baru untuk siswa SMA kelas X–XII. Siswa dapat belajar
 
 - Kota pixel-art besar yang dapat dijelajahi dengan karakter manusia beranimasi.
 - Kontrol keyboard **WASD/tombol panah + E** dan kontrol sentuh untuk ponsel.
+- D-pad arah dan tombol interaksi otomatis tampil pada ponsel, tablet, perangkat berlayar sentuh, serta mode landscape; tombol Tim, Jurnal, dan Menu tetap tersedia pada layar kecil.
 - Tata kota mengikuti pola game Kota Komputasional: alun-alun dan fountain di pusat, jalan utama, 9 gedung besar, pepohonan, NPC, serta kamera yang mengikuti pemain.
 - Setiap gedung dapat dimasuki melalui pintu dan memiliki interior tersendiri, terminal misi, mentor, dan pintu keluar kembali ke kota.
 - Collision aktif pada batas kota, gedung, dan fountain; pemain tidak dapat berjalan menembus objek utama.
