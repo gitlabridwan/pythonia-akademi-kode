@@ -59,6 +59,7 @@ export class WorldEngine {
     this.player = { x: 1340, y: 1255, direction: "up", moving: false, avatar: 0, name: "Kadet", scene: "city" };
     this.camera = { x: this.player.x, y: this.player.y };
     this.keys = new Set();
+    this.touch = { x: 0, y: 0 };
     this.others = [];
     this.running = false;
     this.paused = false;
@@ -127,11 +128,13 @@ export class WorldEngine {
   stop() {
     this.running = false;
     this.keys.clear();
+    this.resetJoystick();
   }
 
   pause() {
     this.paused = true;
     this.keys.clear();
+    this.resetJoystick();
   }
 
   resume() {
@@ -166,17 +169,58 @@ export class WorldEngine {
       const direction = DIRECTIONS.get(event.key.toLowerCase());
       if (direction) this.keys.delete(direction);
     });
-    window.addEventListener("blur", () => this.keys.clear());
-    document.querySelectorAll("[data-move]").forEach((button) => {
-      const direction = button.dataset.move;
-      const press = (event) => { event.preventDefault(); this.keys.add(direction); };
-      const release = (event) => { event.preventDefault(); this.keys.delete(direction); };
-      button.addEventListener("pointerdown", press);
-      button.addEventListener("pointerup", release);
-      button.addEventListener("pointercancel", release);
-      button.addEventListener("pointerleave", release);
+    window.addEventListener("blur", () => {
+      this.keys.clear();
+      this.resetJoystick();
     });
+    const joystick = document.querySelector("#touchJoystick");
+    if (joystick) {
+      const move = (event) => {
+        event.preventDefault();
+        this.updateJoystick(event, joystick);
+      };
+      const release = (event) => {
+        event.preventDefault();
+        this.resetJoystick(joystick);
+      };
+      joystick.addEventListener("pointerdown", (event) => {
+        if (!this.running || this.paused) return;
+        joystick.setPointerCapture(event.pointerId);
+        joystick.classList.add("is-active");
+        move(event);
+      });
+      joystick.addEventListener("pointermove", (event) => {
+        if (joystick.hasPointerCapture(event.pointerId)) move(event);
+      });
+      joystick.addEventListener("pointerup", release);
+      joystick.addEventListener("pointercancel", release);
+      joystick.addEventListener("lostpointercapture", () => this.resetJoystick(joystick));
+    }
     document.querySelector("#interactButton")?.addEventListener("click", () => this.interact());
+  }
+
+  updateJoystick(event, joystick) {
+    const bounds = joystick.getBoundingClientRect();
+    const radius = Math.max(1, Math.min(bounds.width, bounds.height) * .28);
+    const offsetX = event.clientX - bounds.left - bounds.width / 2;
+    const offsetY = event.clientY - bounds.top - bounds.height / 2;
+    const distance = Math.hypot(offsetX, offsetY);
+    const limitedDistance = Math.min(distance, radius);
+    const unitX = distance ? offsetX / distance : 0;
+    const unitY = distance ? offsetY / distance : 0;
+    const strength = distance / radius < .08 ? 0 : Math.min(1, distance / radius);
+    this.touch.x = unitX * strength;
+    this.touch.y = unitY * strength;
+    joystick.style.setProperty("--joystick-x", `${unitX * limitedDistance}px`);
+    joystick.style.setProperty("--joystick-y", `${unitY * limitedDistance}px`);
+  }
+
+  resetJoystick(joystick = document.querySelector("#touchJoystick")) {
+    this.touch.x = 0;
+    this.touch.y = 0;
+    joystick?.classList.remove("is-active");
+    joystick?.style.setProperty("--joystick-x", "0px");
+    joystick?.style.setProperty("--joystick-y", "0px");
   }
 
   interact() {
@@ -202,6 +246,7 @@ export class WorldEngine {
     this.activeBuilding = buildingForScene(this.scene) || null;
     this.world = this.scene === "city" ? { ...CITY } : { ...INTERIOR };
     this.keys.clear();
+    this.resetJoystick();
     this.nearest = null;
     this.options.onNear?.(null);
     if (notify) this.options.onScene?.({ scene: this.scene, label: this.activeBuilding?.label || "Kota Pythonia" });
@@ -283,8 +328,8 @@ export class WorldEngine {
 
   update(delta, time) {
     if (this.paused) return;
-    let dx = 0;
-    let dy = 0;
+    let dx = this.touch.x;
+    let dy = this.touch.y;
     if (this.keys.has("left")) dx -= 1;
     if (this.keys.has("right")) dx += 1;
     if (this.keys.has("up")) dy -= 1;
@@ -292,11 +337,12 @@ export class WorldEngine {
     this.player.moving = Boolean(dx || dy);
     if (this.player.moving) {
       const length = Math.hypot(dx, dy);
+      const strength = Math.min(1, length);
       dx /= length;
       dy /= length;
       if (Math.abs(dx) > Math.abs(dy)) this.player.direction = dx < 0 ? "left" : "right";
       else this.player.direction = dy < 0 ? "up" : "down";
-      const speed = 250;
+      const speed = 250 * strength;
       const nextX = this.player.x + dx * speed * delta;
       const nextY = this.player.y + dy * speed * delta;
       if (!this.isBlocked(nextX, this.player.y)) this.player.x = nextX;

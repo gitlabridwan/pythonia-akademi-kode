@@ -39,38 +39,59 @@
 .near-prompt { position: absolute; z-index: 4; bottom: 67px; left: 50%; display: flex; align-items: center; gap: 11px; border-color: rgba(82,229,255,.55); border-radius: 14px; padding: 10px 16px 10px 10px; transform: translateX(-50%); animation: prompt-in .2s ease; }.near-prompt kbd { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid rgba(255,255,255,.45); border-radius: 9px; background: linear-gradient(#f8fdff,#b8d6dc); color: #10303a; font-family: ui-monospace, monospace; font-size: 14px; font-weight: 950; box-shadow: 0 3px 0 #66858e; }.near-prompt small, .near-prompt b { display: block; }.near-prompt small { color: var(--cyan); font-size: 7px; font-weight: 850; letter-spacing: .13em; }.near-prompt b { margin-top: 3px; font-size: 10px; white-space: nowrap; }
 @keyframes prompt-in { from { opacity: 0; transform: translate(-50%, 8px); } }
 .game-control-hint { position: absolute; z-index: 3; bottom: 18px; left: 50%; border-radius: 9px; padding: 8px 12px; color: rgba(255,255,255,.72); font-size: 8px; transform: translateX(-50%); }.game-control-hint span { margin: 0 4px; border: 1px solid rgba(255,255,255,.25); border-radius: 4px; background: rgba(255,255,255,.08); padding: 3px 5px; color: white; font-family: ui-monospace, monospace; font-weight: 900; }
-.touch-dpad {
+.touch-joystick {
+  --joystick-x: 0px;
+  --joystick-y: 0px;
   position: absolute;
   z-index: 6;
   bottom: calc(18px + env(safe-area-inset-bottom));
   left: calc(18px + env(safe-area-inset-left));
   display: none;
-  width: 144px;
-  height: 108px;
-  grid-template: repeat(2, 1fr) / repeat(3, 1fr);
-  gap: 6px;
+  width: 142px;
+  height: 142px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(82,229,255,.09) 0 36%, transparent 37%),
+    radial-gradient(circle at center, rgba(5,23,34,.86) 0 64%, rgba(4,17,28,.64) 65% 100%);
+  box-shadow: inset 0 0 0 8px rgba(255,255,255,.025), 0 12px 26px rgba(0,0,0,.3);
+  backdrop-filter: blur(9px);
   pointer-events: auto;
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-.touch-dpad button {
-  min-width: 44px;
-  min-height: 48px;
-  border: 1px solid rgba(255,255,255,.38);
-  border-radius: 12px;
-  background: rgba(5,23,34,.88);
-  color: white;
-  font-size: 18px;
-  box-shadow: 0 8px 18px rgba(0,0,0,.28);
-  backdrop-filter: blur(9px);
-  touch-action: none;
+.touch-joystick::before,
+.touch-joystick::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
 }
-.touch-dpad button:active { border-color: var(--cyan); background: rgba(82,229,255,.32); transform: scale(.96); }
-.touch-dpad [data-move="up"] { grid-column: 2; }
-.touch-dpad [data-move="left"] { grid-row: 2; grid-column: 1; }
-.touch-dpad [data-move="down"] { grid-row: 2; grid-column: 2; }
-.touch-dpad [data-move="right"] { grid-row: 2; grid-column: 3; }
+.touch-joystick::before { inset: 13px; border: 1px solid rgba(82,229,255,.2); border-radius: 50%; }
+.touch-joystick::after { inset: 50%; width: 4px; height: 4px; border-radius: 50%; background: rgba(82,229,255,.55); transform: translate(-50%, -50%); }
+.joystick-guide { position: absolute; z-index: 1; color: rgba(205,239,247,.48); font-size: 9px; line-height: 1; pointer-events: none; }
+.joystick-up { top: 8px; left: 50%; transform: translateX(-50%); }
+.joystick-left { top: 50%; left: 9px; transform: translateY(-50%); }
+.joystick-right { top: 50%; right: 9px; transform: translateY(-50%); }
+.joystick-down { bottom: 8px; left: 50%; transform: translateX(-50%); }
+.joystick-knob {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  border: 2px solid rgba(175,244,255,.8);
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, rgba(159,243,255,.58), rgba(20,105,126,.94) 52%, rgba(5,42,57,.98));
+  box-shadow: inset 0 2px 8px rgba(255,255,255,.2), 0 0 20px rgba(82,229,255,.28), 0 7px 15px rgba(0,0,0,.34);
+  transform: translate(calc(-50% + var(--joystick-x)), calc(-50% + var(--joystick-y)));
+  transition: transform 70ms linear;
+  pointer-events: none;
+}
+.touch-joystick.is-active { border-color: rgba(82,229,255,.78); box-shadow: inset 0 0 0 8px rgba(82,229,255,.04), 0 0 28px rgba(82,229,255,.22), 0 12px 26px rgba(0,0,0,.3); }
+.touch-joystick.is-active .joystick-knob { transition: none; }
 .touch-interact {
   position: absolute;
   z-index: 6;
@@ -96,17 +117,17 @@
 .touch-interact b { font-family: ui-monospace, monospace; font-size: 21px; }
 .touch-interact span { color: var(--cyan); font-size: 6px; font-weight: 900; letter-spacing: .08em; }
 
-html.touch-input .touch-dpad { display: grid; }
+html.touch-input .touch-joystick { display: block; }
 html.touch-input .touch-interact { display: grid; }
 html.touch-input .game-control-hint { display: none; }
-html.touch-input .near-prompt { bottom: 138px; }
+html.touch-input .near-prompt { bottom: 166px; }
 html.touch-input .near-prompt kbd { display: none; }
 
 @media (max-width: 1180px), (hover: none), (pointer: coarse) {
-  .touch-dpad { display: grid; }
+  .touch-joystick { display: block; }
   .touch-interact { display: grid; }
   .game-control-hint { display: none; }
-  .near-prompt { bottom: 138px; }
+  .near-prompt { bottom: 166px; }
   .near-prompt kbd { display: none; }
 }
 
@@ -120,22 +141,23 @@ html.touch-input .near-prompt kbd { display: none; }
   .adventure-menu-copy { top: auto; bottom: 74px; left: 18px; width: calc(100vw - 36px); transform: none; }.adventure-menu-copy h1 { font-size: clamp(48px, 15vw, 70px); }.menu-description { font-size: 11px; }.adventure-menu-actions { width: 100%; margin-top: 19px; }.adventure-choice { min-height: 58px; }
   .menu-location-note { display: none; }.adventure-menu-footer { gap: 14px; overflow: hidden; padding: 12px 18px; white-space: nowrap; }.adventure-menu-footer span:nth-child(-n+2) { display: none; }
   .game-hud { grid-template-columns: 1fr auto; padding: 10px; }.game-profile-card { min-width: 0; padding: 7px 9px; }.game-profile-card .avatar { width: 34px; height: 34px; }.game-objective { position: absolute; top: 63px; left: 50%; min-width: min(300px, calc(100vw - 100px)); padding: 8px 12px; transform: translateX(-50%); }.game-hud-actions { grid-column: 2; }.game-hud-actions button { width: 36px; padding: 0; }.game-hud-actions button span { display: none; }.game-xp { top: 72px; left: 10px; padding: 7px 9px; }
-  .game-control-hint { display: none; }.near-prompt { bottom: 138px; }.near-prompt kbd { display: none; }
+  .game-control-hint { display: none; }.near-prompt { bottom: 166px; }.near-prompt kbd { display: none; }
   .back-world-button { order: 3; }
 }
 
 @media (max-width: 480px) {
   .adventure-menu-copy { bottom: 63px; }.adventure-menu-copy h1 { margin-top: 9px; }.menu-tagline { margin-top: 15px; }.menu-description { max-width: 92%; }.adventure-menu-actions { gap: 7px; }.adventure-choice { min-height: 55px; padding: 7px 12px; }.adventure-choice .choice-icon { width: 35px; height: 35px; }.menu-guide-button { padding-top: 3px; }
   .game-objective { top: 61px; min-width: min(280px, calc(100vw - 24px)); }.game-objective b { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.game-profile-card { max-width: 145px; }.game-profile-card > div { min-width: 0; }.game-profile-card b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.game-profile-card div > span { display: none; }.game-hud-actions { gap: 3px; padding: 4px; }.game-hud-actions button { width: 32px; height: 34px; }
-  .touch-dpad { width: 132px; height: 100px; gap: 5px; }
+  .touch-joystick { width: 126px; height: 126px; }
+  .joystick-knob { width: 54px; height: 54px; }
   .touch-interact { width: 72px; height: 72px; }
   .npc-modal { padding: 38px 23px 28px; }
 }
 
 @media (max-height: 680px) and (orientation: landscape) {
   .adventure-menu-copy { top: 53%; }.adventure-menu-copy h1 { font-size: 50px; }.menu-tagline { margin-top: 13px; }.menu-description { display: none; }.adventure-menu-actions { margin-top: 13px; }.adventure-choice { min-height: 52px; }.menu-location-note { display: none; }
-  .touch-dpad { bottom: calc(10px + env(safe-area-inset-bottom)); width: 118px; height: 86px; }
-  .touch-dpad button { min-width: 36px; min-height: 38px; }
+  .touch-joystick { bottom: calc(10px + env(safe-area-inset-bottom)); width: 112px; height: 112px; }
+  .joystick-knob { width: 48px; height: 48px; }
   .touch-interact { right: calc(16px + env(safe-area-inset-right)); bottom: calc(14px + env(safe-area-inset-bottom)); width: 64px; height: 64px; }
-  .near-prompt, html.touch-input .near-prompt { bottom: 108px; }
+  .near-prompt, html.touch-input .near-prompt { bottom: 130px; }
 }

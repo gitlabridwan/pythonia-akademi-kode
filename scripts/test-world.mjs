@@ -66,6 +66,28 @@ world.update(.1, 1000);
 world.keys.clear();
 assert.equal(world.player.x > startX, true);
 
+const analogStart = { x: world.player.x, y: world.player.y };
+world.touch.x = .6;
+world.touch.y = .8;
+world.update(.1, 1500);
+world.resetJoystick();
+assert.equal(world.player.x > analogStart.x, true);
+assert.equal(world.player.y > analogStart.y, true);
+assert.deepEqual(world.touch, { x: 0, y: 0 });
+
+const joystickProperties = new Map();
+const joystick = {
+  getBoundingClientRect() { return { left: 0, top: 0, width: 140, height: 140 }; },
+  style: { setProperty(name, value) { joystickProperties.set(name, value); } },
+  classList: { remove() {} }
+};
+world.updateJoystick({ clientX: 170, clientY: 70 }, joystick);
+assert.equal(world.touch.x, 1);
+assert.equal(world.touch.y, 0);
+assert.equal(joystickProperties.get("--joystick-x"), "39.2px");
+world.resetJoystick(joystick);
+assert.deepEqual(world.touch, { x: 0, y: 0 });
+
 const algorithmDoor = world.sceneObjects().find((item) => item.id === "door-algorithms");
 world.player.x = algorithmDoor.x;
 world.player.y = algorithmDoor.y;
@@ -88,4 +110,4 @@ assert.equal(world.scene, "city");
 assert.equal(events.some(([type, scene]) => type === "move" && scene === "algorithms"), true);
 assert.equal(events.some(([type, scene]) => type === "move" && scene === "city"), true);
 
-console.log("Uji dunia berhasil: kota, 9 pintu, interior, collision, dan perpindahan scene siap.");
+console.log("Uji dunia berhasil: kota, joystick analog, 9 pintu, interior, collision, dan perpindahan scene siap.");

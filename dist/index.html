@@ -59,11 +59,12 @@
       </header>
       <div class="game-xp"><span>⚡</span><b id="gameXpValue">0</b><small>XP</small></div>
       <div id="nearPrompt" class="near-prompt" hidden><kbd>E</kbd><div><small>INTERAKSI</small><b id="nearPromptLabel">Masuk gedung</b></div></div>
-      <div class="touch-dpad" aria-label="Kontrol gerak sentuh">
-        <button data-move="up" aria-label="Berjalan ke atas">▲</button>
-        <button data-move="left" aria-label="Berjalan ke kiri">◀</button>
-        <button data-move="down" aria-label="Berjalan ke bawah">▼</button>
-        <button data-move="right" aria-label="Berjalan ke kanan">▶</button>
+      <div id="touchJoystick" class="touch-joystick" role="group" aria-label="Joystick analog untuk bergerak">
+        <span class="joystick-guide joystick-up" aria-hidden="true">▲</span>
+        <span class="joystick-guide joystick-left" aria-hidden="true">◀</span>
+        <span class="joystick-guide joystick-right" aria-hidden="true">▶</span>
+        <span class="joystick-guide joystick-down" aria-hidden="true">▼</span>
+        <div class="joystick-knob" aria-hidden="true"></div>
       </div>
       <button id="interactButton" class="touch-interact"><b>E</b><span>INTERAKSI</span></button>
       <div class="game-control-hint"><span>WASD</span> Bergerak <span>E</span> Interaksi</div>
@@ -180,7 +181,7 @@
         <section id="screen-help" class="screen">
           <div class="screen-intro"><div><span class="kicker">PANDUAN KADET</span><h2>Cara bermain</h2><p>Jelajahi kota, masuki gedung, dan pulihkan pusat ilmu Python secara berurutan.</p></div></div>
           <div class="help-grid">
-            <article><span class="help-number">01</span><div class="help-glyph">✣</div><h3>Jelajahi kota</h3><p>Berjalan dengan WASD atau tombol panah. Di ponsel, gunakan D-pad pada layar.</p></article>
+            <article><span class="help-number">01</span><div class="help-glyph">✣</div><h3>Jelajahi kota</h3><p>Berjalan dengan WASD atau tombol panah. Di ponsel dan tablet, geser joystick analog pada layar.</p></article>
             <article><span class="help-number">02</span><div class="help-glyph">E</div><h3>Temukan interaksi</h3><p>Dekati pintu gedung atau NPC, lalu tekan E, Enter, Spasi, atau tombol Interaksi.</p></article>
             <article><span class="help-number">03</span><div class="help-glyph">?</div><h3>Pecahkan konsep</h3><p>Pilih jawaban terbaik dan pahami alasan di balik konsep Python.</p></article>
             <article><span class="help-number">04</span><div class="help-glyph">⇅</div><h3>Susun algoritma</h3><p>Urutkan potongan kode sampai alur program bekerja secara logis.</p></article>

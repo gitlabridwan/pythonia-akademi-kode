@@ -6,7 +6,7 @@ Game pembelajaran Python baru untuk siswa SMA kelas X–XII. Siswa dapat belajar
 
 - Kota pixel-art besar yang dapat dijelajahi dengan karakter manusia beranimasi.
 - Kontrol keyboard **WASD/tombol panah + E** dan kontrol sentuh untuk ponsel.
-- D-pad arah dan tombol interaksi otomatis tampil pada ponsel, tablet, perangkat berlayar sentuh, serta mode landscape; tombol Tim, Jurnal, dan Menu tetap tersedia pada layar kecil.
+- Joystick analog 360° dan tombol interaksi otomatis tampil pada ponsel, tablet, perangkat berlayar sentuh, serta mode landscape; tombol Tim, Jurnal, dan Menu tetap tersedia pada layar kecil.
 - Tata kota mengikuti pola game Kota Komputasional: alun-alun dan fountain di pusat, jalan utama, 9 gedung besar, pepohonan, NPC, serta kamera yang mengikuti pemain.
 - Setiap gedung dapat dimasuki melalui pintu dan memiliki interior tersendiri, terminal misi, mentor, dan pintu keluar kembali ke kota.
 - Collision aktif pada batas kota, gedung, dan fountain; pemain tidak dapat berjalan menembus objek utama.
@@ -54,7 +54,7 @@ Pada menu utama pilih **Mulai solo**, isi profil, kemudian:
 - dekati pintu gedung atau NPC sampai prompt interaksi muncul;
 - tekan `E`, `Enter`, atau `Spasi` untuk berinteraksi;
 - setelah masuk gedung, dekati terminal bernomor untuk membuka misi dan gunakan pintu bawah untuk kembali ke kota;
-- pada ponsel gunakan D-pad dan tombol **Interaksi**;
+- pada ponsel atau tablet, geser joystick analog untuk bergerak dan tekan tombol **Interaksi**;
 - buka **Jurnal** untuk melihat peta misi, daftar misi, dan progres belajar.
 
 Koneksi internet diperlukan saat pertama kali mesin Python mengunduh Pyodide `314.0.7` dari CDN. Kuis dan susun kode tetap dapat dibuka apabila Pyodide tidak tersedia.

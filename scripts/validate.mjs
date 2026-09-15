@@ -54,8 +54,18 @@ for (const reference of ["./styles.css", "./game.css", "./app.js", "./favicon.sv
 
 const gameCss = await readFile(resolve(root, "dist/game.css"), "utf8");
 const appSource = await readFile(resolve(root, "dist/app.js"), "utf8");
-for (const signature of ["max-width: 1180px", "pointer: coarse", "html.touch-input .touch-dpad", "html.touch-input .touch-interact"]) {
+for (const signature of ["max-width: 1180px", "pointer: coarse", "html.touch-input .touch-joystick", "html.touch-input .touch-interact"]) {
   if (!gameCss.includes(signature)) errors.push(`Dukungan kontrol sentuh tidak lengkap: ${signature}.`);
+}
+for (const signature of ['id="touchJoystick"', 'class="joystick-knob"']) {
+  if (!html.includes(signature)) errors.push(`Elemen joystick analog tidak ditemukan: ${signature}.`);
+}
+const worldSource = await readFile(resolve(root, "dist/world.js"), "utf8");
+for (const signature of ["this.touch", "setPointerCapture", "updateJoystick", "--joystick-x"]) {
+  if (!worldSource.includes(signature)) errors.push(`Logika joystick analog tidak lengkap: ${signature}.`);
+}
+if (html.includes("data-move") || gameCss.includes("touch-dpad")) {
+  errors.push("Kontrol D-pad lama masih ditemukan.");
 }
 if (gameCss.includes(".game-hud-actions button:first-child { display: none; }")) {
   errors.push("Tombol Tim masih disembunyikan pada layar kecil.");
